@@ -33,4 +33,4 @@ jobs:
         uv tool run twine check dist/*
 
     - name: Publish to PyPI
-      uses: uv publish
+      run: uv publish
