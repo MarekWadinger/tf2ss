@@ -1057,7 +1057,7 @@ wheels = [
 
 [[package]]
 name = "tf2ss"
-version = "1.0.0"
+version = "1.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "control" },
@@ -1066,7 +1066,7 @@ dependencies = [
     { name = "sympy" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "commitizen" },
     { name = "mypy" },
@@ -1080,23 +1080,18 @@ test = [
 
 [package.metadata]
 requires-dist = [
+    { name = "commitizen", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "control", specifier = ">=0.9.0,<1.0.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "numpy", specifier = ">=1.20.0,<3.0.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0.0" },
+    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
     { name = "scipy", specifier = ">=1.7.0,<2.0.0" },
     { name = "sympy", specifier = ">=1.8,<2.0.0" },
 ]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "commitizen", specifier = ">=4.0.0" },
-    { name = "mypy", specifier = ">=1.0.0" },
-    { name = "pre-commit", specifier = ">=3.0.0" },
-    { name = "ruff", specifier = ">=0.1.0" },
-]
-test = [
-    { name = "pytest", specifier = ">=7.0.0" },
-    { name = "pytest-cov", specifier = ">=4.0.0" },
-]
+provides-extras = ["test", "dev"]
 
 [[package]]
 name = "tomli"
