@@ -25,7 +25,7 @@ from numpy import any, empty, squeeze
 from scipy import interpolate as sp_interpolate
 from scipy import linalg, signal
 
-from . import tf2ss
+from .tf2ss import tf2ss
 
 
 def _convert_to_statespace(

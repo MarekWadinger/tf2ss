@@ -221,11 +221,20 @@ def _get_lcm_norm_coeffs(
 
 
 def rjust(list_: list[int | float], width) -> list[int | float]:
-    """Examples:
-    >>> rjust([1, 2, 3], 4)
-    [1, 2, 3, 0]
-    >>> rjust([1, 2, 3, 4, 5], 4)
-    [1, 2, 3, 4]
+    """Right-justify a list by padding with zeros or truncating to specified width.
+
+    Parameters:
+        list_: List of numeric values to justify
+        width: Target width of the resulting list
+
+    Returns:
+        Right-justified list, either padded with zeros or truncated to width
+
+    Examples:
+        >>> rjust([1, 2, 3], 4)
+        [1, 2, 3, 0]
+        >>> rjust([1, 2, 3, 4, 5], 4)
+        [1, 2, 3, 4]
     """
     pad_with = 0 if isinstance(list_[0], int) else 0.0
 
@@ -358,7 +367,11 @@ def tf2ss(
         """Trip zeros along the given axis, preserving at last one array."""
         slices = [slice(None)] * arr.ndim
         for idx in range(arr.shape[axis]):
-            slices[axis] = idx if trim == "f" else -idx - 1
+            # Type annotation to fix the error in line 361
+            # Use explicit typing for the list index
+            slices[axis] = (
+                slice(idx, idx + 1) if trim == "f" else slice(-idx - 1, -idx)
+            )
             if not np.all(arr[tuple(slices)] == 0):
                 break
         start = idx if trim == "f" else 0
