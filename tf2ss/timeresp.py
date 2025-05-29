@@ -498,3 +498,51 @@ def forced_response(
         return_x=return_x,
         squeeze=squeeze,
     )
+
+
+def lsim(sys, U=0.0, T=None, X0=0):
+    """Simulate the output of a linear system.
+
+    As a convenience for parameters `U`, `X0`:
+    Numbers (scalars) are converted to constant arrays with the correct shape.
+    The correct shape is inferred from arguments `sys` and `T`.
+
+    Parameters
+    ----------
+    sys: LTI (StateSpace, or TransferFunction)
+        LTI system to simulate
+    U: array-like or number, optional
+        Input array giving input at each time `T` (default = 0).
+
+        If `U` is ``None`` or ``0``, a special algorithm is used. This special
+        algorithm is faster than the general algorithm, which is used otherwise.
+    T: array-like, optional for discrete LTI `sys`
+        Time steps at which the input is defined; values must be evenly spaced.
+    X0: array-like or number, optional
+        Initial condition (default = 0).
+
+    Returns:
+    -------
+    yout: array
+        Response of the system.
+    T: array
+        Time values of the output.
+    xout: array
+        Time evolution of the state vector.
+
+    See Also:
+    --------
+    step, initial, impulse
+
+    Examples:
+    --------
+    >>> from control.matlab import rss, lsim
+
+    >>> G = rss(4)
+    >>> T = np.linspace(0,10)
+    >>> yout, T, xout = lsim(G, T=T)
+
+    """
+    # Switch output argument order and transpose outputs (and always return x)
+    out = forced_response(sys, T, U, X0, return_x=True, transpose=True)
+    return out[1], out[0], out[2]
