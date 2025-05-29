@@ -49,6 +49,7 @@ dev = [
     "commitizen>=4.0.0",
     "pre-commit>=3.0.0",
     "ruff>=0.1.0",
+    "twine>=6.1.0",
 ]
 
 [build-system]

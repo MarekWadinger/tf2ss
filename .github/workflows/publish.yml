@@ -22,12 +22,15 @@ jobs:
     - name: Set up Python
       run: uv python install 3.11
 
+    - name: Create virtual environment
+      run: uv sync
+
     - name: Build package
       run: uv build
 
     - name: Check package
       run: |
-        uv pip install twine --system -U
+        uv pip install twine -U
         uv tool run twine check dist/*
 
     - name: Publish to PyPI
