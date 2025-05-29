@@ -379,7 +379,7 @@ def tf2ss(
         slices[axis] = slice(start, end)
         return arr[tuple(slices)]
 
-    numerators_ = trim_zeros_along_axis(numerators_, axis=1, trim="b")
+    numerators_ = trim_zeros_along_axis(numerators_, axis=0, trim="b")
     numerators_ = np.vectorize(lambda x: sp.Rational(str(x)))(numerators_)
     denominators_ = np.vectorize(lambda x: sp.Rational(str(x)))(denominators_)
     n_outputs = len(numerators_)
