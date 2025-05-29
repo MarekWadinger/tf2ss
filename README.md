@@ -27,23 +27,7 @@
 
 ## ⚡️ Quickstart
 
-Convert a simple SISO transfer function to state-space:
-
-```python
-from tf2ss import tf2ss
-
-# Simple SISO system: H(s) = (s+1)/(s^2+3s+2)
-numerators = [[[1, 1]]]  # s + 1
-denominators = [[[1, 3, 2]]]  # s^2 + 3s + 2
-
-A, B, C, D = tf2ss(numerators, denominators)
-print(f"A matrix:\n{A}")
-print(f"B matrix:\n{B}")
-print(f"C matrix:\n{C}")
-print(f"D matrix:\n{D}")
-```
-
-Convert a MIMO system:
+Convert a MIMO system from transfer function to state-space, just like you do in scipy, control, MATLAB even:
 
 ```python
 from tf2ss import tf2ss
@@ -57,11 +41,6 @@ numerators = [
 denominators = [[[1, 2], [1, 2]], [[1, 2], [1, 2]]]  # Common denominator s+2
 
 A, B, C, D = tf2ss(numerators, denominators)
-
-# The resulting state-space matrices represent the MIMO system
-print(f"System order: {A.shape[0]}")
-print(f"Number of inputs: {B.shape[1]}")
-print(f"Number of outputs: {C.shape[0]}")
 ```
 
 You can also work directly with `control` library objects:
@@ -237,8 +216,8 @@ This report compares the cases where different implementations produce different
 
 | System | Our Implementation | SLYCOT Implementation | MATLAB Implementation |
 |--------|-------------------|----------------------|----------------------|
-| $  \frac{1s + 1}{s^2 + 3s + 2}  $ | -2.0 + 0.0j<br>-1.0 + 0.0j | -2.0 + 0.0j | -2.0 + 0.0i<br>-1.0 + 0.0i |
-| $ \begin{bmatrix} \frac{0s^2 + 0s + 1}{s^2 + 0.4s + 3} & \frac{s^2 + 0s + 0}{s^2 + s + 0} \\ \frac{3s^2 - 1s + 1}{s^2 + 0.4s + 3} & \frac{0s^2 + s + 0}{s^2 + s + 0} \\ \frac{0s^2 + 0s + 1}{s^2 + 0.4s + 3} & \frac{0s^2 + 2s + 0}{s^2 + s + 0} \end{bmatrix} $ | 0.0 +0.0j<br>-0.2+1.7205j<br>-0.2-1.7205j<br>-1.0 +0.0j | -0.2+1.7205j<br>-0.2-1.7205j<br>-0.2+1.7205j<br>-0.2-1.7205j<br>-0.2+1.7205j<br>-0.2-1.7205j<br>-1. +0.j<br>-1. +0.j<br>-1. +0.j  | -0.2 + 1.7205i<br>-0.2 - 1.7205i<br>0.0 + 0.0j<br>-1.0 + 0.0i |
+| $  \frac{1s + 1}{s^2 + 3s + 2}  $ | -2.0 + 0.0j<br>-1.0 + 0.0j | -2.0 + 0.0j | -2.0 + 0.0j<br>-1.0 + 0.0j |
+| $ \begin{bmatrix} \frac{0s^2 + 0s + 1}{s^2 + 0.4s + 3} & \frac{s^2 + 0s + 0}{s^2 + s + 0} \\ \frac{3s^2 - 1s + 1}{s^2 + 0.4s + 3} & \frac{0s^2 + s + 0}{s^2 + s + 0} \\ \frac{0s^2 + 0s + 1}{s^2 + 0.4s + 3} & \frac{0s^2 + 2s + 0}{s^2 + s + 0} \end{bmatrix} $ | 0.0 +0.0j<br>-0.2+1.7205j<br>-0.2-1.7205j<br>-1.0 +0.0j | -0.2+1.7205j<br>-0.2-1.7205j<br>-0.2+1.7205j<br>-0.2-1.7205j<br>-0.2+1.7205j<br>-0.2-1.7205j<br>-1. +0.j<br>-1. +0.j<br>-1. +0.j  | -0.2 + 1.7205j<br>-0.2 - 1.7205j<br>0.0 + 0.0j<br>-1.0 + 0.0j |
 | $ \begin{bmatrix} \frac{s^3 + 6s^2 + 12s + 7}{s^3 + 6s^2 + 11s + 6} & \frac{0s^3 + s^2 + 4s + 3}{s^3 + 6s^2 + 11s + 6} \\ \frac{0s^3 + 0s^2 + s + 1}{s^3 + 6s^2 + 11s + 6} & \frac{s^3 + 8s^2 + 20s + 15}{s^3 + 6s^2 + 11s + 6} \end{bmatrix} $ | -3.0 + 0.0j<br>-2.0 + 0.0j<br>-1.0 + 0.0j | -3.0 + 0.0j<br>-2.0 + 0.0j<br>-1.0 + 0.0j<br>-2.0 + 0.0j<br>-2.0 + 0.0j<br>-3.0 + 0.0j<br>-2.0 + 0.0j | -3.0 + 0.0j<br>-2.0 + 0.0j<br>-1.0 + 0.0j<br>-3.0 + 0.0j<br>-2.0 + 0.0j<br>-1.0 + 0.0j |
 
 ## 🤝 Contributing
