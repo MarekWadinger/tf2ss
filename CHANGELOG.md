@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v1.1.4 (2025-05-29)
+
+### Fix
+
+- **base**: improved numerical stability of the solution by rounding floats to 14 decimal places
+- **base**: trimming of numerator is aware of which redundant dimension was introduced by _common_den()
+
 ## v1.1.3 (2025-05-29)
 
 ### Fix
