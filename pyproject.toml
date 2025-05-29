@@ -39,7 +39,7 @@ repository = "https://github.com/MarekWadinger/tf2ss"
 documentation = "https://github.com/MarekWadinger/tf2ss#readme"
 issues = "https://github.com/MarekWadinger/tf2ss/issues"
 
-[dependency-groups]
+[project.optional-dependencies]
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
