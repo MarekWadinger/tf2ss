@@ -4,12 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v1.0.4 (2025-05-29)
+
+### Fix
+
+- upgrade of twine
+
 ## v1.0.3 (2025-05-29)
 
 ### Fix
 
 - **pyproject**: try tu upgrade twine
-- **pyproject**: use compatible hatchling version https://github.com/astral-sh/rye/issues/1446
+- **pyproject**: use compatible hatchling version <https://github.com/astral-sh/rye/issues/1446>
 
 ## v1.0.2 (2025-05-29)
 
