@@ -1,4 +1,4 @@
-# tf2ss - Pure Python MIMO Transfer Function to State-Space Conversion
+# tf2ss - MIMO Transfer Function to State-Space Conversion
 
 🚀 **Easy-to-install alternative to SLYCOT** | 🎯 **MATLAB-consistent results** | 🔧 **No Fortran compiler required**
 
@@ -7,7 +7,7 @@
 [![Quality and Tests](https://github.com/MarekWadinger/tf2ss/actions/workflows/ci.yml/badge.svg)](https://github.com/MarekWadinger/tf2ss/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MarekWadinger/tf2ss/branch/main/graph/badge.svg)](https://codecov.io/gh/MarekWadinger/tf2ss)
 
-`tf2ss` is a Python library for converting transfer function representations to state-space form, supporting **Multi-Input Multi-Output (MIMO) systems**!
+`tf2ss` is a Python library for converting transfer function representations to state-space form, supporting **Multi-Input Multi-Output (MIMO) systems**, compilation-less!
 
 ## 🤔 Why tf2ss?
 
@@ -17,7 +17,7 @@
 
 **Want MATLAB-consistent results?** Our implementation produces identical results to MATLAB's `tf2ss` function.
 
-**tf2ss solves all these problems** with a pure Python implementation that's easy to install and works everywhere Python does!
+**tf2ss solves all these problems** with a Python implementation that's easy to install and works everywhere Python does—no compilers, no manual builds, just `pip install tf2ss`!
 
 | Library | Installation Complexity | Dependencies        | MATLAB Consistency | MIMO Support |
 |---------|-------------------------|---------------------|--------------------|--------------|
