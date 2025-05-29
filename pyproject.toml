@@ -1,6 +1,6 @@
 [project]
 name = "tf2ss"
-version = "1.0.2"
+version = "1.0.3"
 description = "Transfer Function to State Space conversion for MIMO systems"
 authors = [
     { name = "Marek Wadinger", email = "marek.wadinger@example.com" }
