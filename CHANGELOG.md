@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v1.1.3 (2025-05-29)
+
+### Fix
+
+- **base**: wrong numerator trimming axis
+
 ## v1.1.2 (2025-05-29)
 
 ### Fix
