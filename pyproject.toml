@@ -40,15 +40,18 @@ documentation = "https://github.com/MarekWadinger/tf2ss#readme"
 issues = "https://github.com/MarekWadinger/tf2ss/issues"
 
 [project.optional-dependencies]
-test = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+benchmark = [
+    "slycot>=0.6.0",
 ]
 dev = [
     "mypy>=1.0.0",
     "commitizen>=4.0.0",
     "pre-commit>=3.0.0",
     "ruff>=0.1.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
 ]
 
 [build-system]
