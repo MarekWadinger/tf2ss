@@ -27,7 +27,6 @@ def _pad_numerators(
     """
     max_len = max(len(num) for row in numerators for num in row)
     pad_with = 0 if isinstance(numerators[0][0][0], int) else 0.0
-    # type_ = type(numerators[0][0][0])
     padded_numerators = [
         [[pad_with] * (max_len - len(num)) + num for num in row]
         for row in numerators
@@ -379,7 +378,15 @@ def tf2ss(
         slices[axis] = slice(start, end)
         return arr[tuple(slices)]
 
-    numerators_ = trim_zeros_along_axis(numerators_, axis=0, trim="b")
+    if sys.noutputs < numerators_.shape[0]:
+        axis = 0
+    elif sys.ninputs < numerators_.shape[1]:
+        axis = 1
+    else:
+        axis = None
+    if axis is not None:
+        numerators_ = trim_zeros_along_axis(numerators_, axis=axis, trim="b")
+    # Round to avoid floating point errors. Highest stable precision is 14 decimal places.
     numerators_ = np.vectorize(lambda x: sp.Rational(str(x)))(numerators_)
     denominators_ = np.vectorize(lambda x: sp.Rational(str(x)))(denominators_)
     n_outputs = len(numerators_)
