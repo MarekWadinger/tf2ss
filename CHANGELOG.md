@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v1.0.5 (2025-05-29)
+
+### Fix
+
+- add twine to dev deps
+
 ## v1.0.4 (2025-05-29)
 
 ### Fix
