@@ -1,13 +1,23 @@
-# tf2ss
+# tf2ss - Pure Python MIMO Transfer Function to State-Space Conversion
+
+🚀 **Easy-to-install alternative to SLYCOT** | 🎯 **MATLAB-consistent results** | 🔧 **No Fortran compiler required**
 
 [![PyPI Package latest release](https://img.shields.io/pypi/v/tf2ss.svg?style=)](https://pypi.org/project/tf2ss/)
 [![Supported versions](https://img.shields.io/pypi/pyversions/tf2ss.svg?style=)](https://pypi.org/project/tf2ss/)
 [![Quality and Tests](https://github.com/MarekWadinger/tf2ss/actions/workflows/ci.yml/badge.svg)](https://github.com/MarekWadinger/tf2ss/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MarekWadinger/tf2ss/branch/main/graph/badge.svg)](https://codecov.io/gh/MarekWadinger/tf2ss)
 
-## Transfer Function to State-Space Conversion for MIMO Systems
+`tf2ss` is a Python library for converting transfer function representations to state-space form, supporting **Multi-Input Multi-Output (MIMO) systems**!
 
-`tf2ss` is a Python library for converting transfer function representations to state-space form, supporting **Multi-Input Multi-Output (MIMO) systems**! Unlike [control](https://github.com/python-control/python-control) with [SLYCOT](https://github.com/python-control/Slycot) which requires a Fortran compiler and is often challenging to install, `tf2ss` is a pure Python implementation that produces results consistent with MATLAB without any compilation dependencies.
+## 🤔 Why tf2ss?
+
+**Struggling with SLYCOT installation?** [control](https://github.com/python-control/python-control) with [SLYCOT](https://github.com/python-control/Slycot) requires Fortran compilers and BLAS libraries, making it difficult to install across different platforms.
+
+**Need MIMO support in Python?** SciPy's `tf2ss` only handles SISO systems, leaving MIMO users without options.
+
+**Want MATLAB-consistent results?** Our implementation produces identical results to MATLAB's `tf2ss` function.
+
+**tf2ss solves all these problems** with a pure Python implementation that's easy to install and works everywhere Python does!
 
 | Library | Installation Complexity | Dependencies        | MATLAB Consistency | MIMO Support |
 |---------|-------------------------|---------------------|--------------------|--------------|
