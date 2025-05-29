@@ -4,13 +4,6 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
-## [Unreleased]
-
-### Added
-
-- Initial release preparation
-
-## [1.0.0] - 2025-05-29
 
 ### Added
 
@@ -42,3 +35,17 @@ The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/comm
 
 [Unreleased]: https://github.com/mwadinger/tf2ss/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/mwadinger/tf2ss/releases/tag/v1.0.0
+
+## v1.0.1 (2025-05-29)
+
+### Fix
+
+- version bumping and CHANGELOG keeping tools
+- **pyproject**: fix section with deps from uv autogen to supported
+
+## v1.0.0 (2025-05-29)
+
+### Feat
+
+- implement tf2ss conversion and time response functionalities
+- add initial project structure with .gitignore, pre-commit configuration, contributing guidelines, license, README, and project metadata
