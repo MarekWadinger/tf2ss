@@ -57,15 +57,30 @@ def _convert_to_statespace(
                 "convert to StateSpace system"
             )
 
-        if method is None or method == "slycot":
-            A, B, C, D = tf2ss(sys)
-            newsys = StateSpace(
-                A,
-                B[:, : sys.ninputs],
-                C[: sys.noutputs, :],
-                D[: sys.noutputs, : sys.ninputs],
-                sys.dt,
-            )
+        if method is None or method == "tf2ss" or method == "slycot":
+            from control.exception import slycot_check
+
+            if not slycot_check():
+                if method == "slycot":
+                    from warnings import warn
+
+                    warn(
+                        "`slycot` is not installed, using tf2ss instead. "
+                        "Solution may be slow."
+                    )
+
+                A, B, C, D = tf2ss(sys)
+                newsys = StateSpace(
+                    A,
+                    B[:, : sys.ninputs],
+                    C[: sys.noutputs, :],
+                    D[: sys.noutputs, : sys.ninputs],
+                    sys.dt,
+                )
+            else:
+                from control import tf2ss as slycot_tf2ss
+
+                newsys = slycot_tf2ss(sys)
 
         elif method == "scipy":
             # Scipy tf2ss can't handle MIMO, but SISO is OK
