@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v1.2.0 (2025-05-30)
+
+### Feat
+
+- **timeresp**: try using slycot if available (cudos to Windows user with Forran compiler)
+
 ## v1.1.4 (2025-05-29)
 
 ### Fix
