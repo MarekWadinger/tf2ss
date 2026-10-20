@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10"
 
 [[package]]
@@ -1035,6 +1035,15 @@ wheels = [
 ]
 
 [[package]]
+name = "slycot"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/18/96acf7dcdc931d0c9a165a8aa3a6f3e6b145d0d69aea43ecef82b8611888/slycot-0.6.0.tar.gz", hash = "sha256:98ecf19cad0c6ce0d6f4db95169efc14f89a285ac24a4a8da1ca5b96b9da3c23", size = 3084062, upload-time = "2024-04-05T14:08:15.669Z" }
+
+[[package]]
 name = "sympy"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1057,7 +1066,7 @@ wheels = [
 
 [[package]]
 name = "tf2ss"
-version = "1.0.6"
+version = "1.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "control" },
@@ -1067,6 +1076,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+benchmark = [
+    { name = "slycot" },
+]
 dev = [
     { name = "commitizen" },
     { name = "mypy" },
@@ -1089,9 +1101,10 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
     { name = "scipy", specifier = ">=1.7.0,<2.0.0" },
+    { name = "slycot", marker = "extra == 'benchmark'", specifier = ">=0.6.0" },
     { name = "sympy", specifier = ">=1.8,<2.0.0" },
 ]
-provides-extras = ["test", "dev"]
+provides-extras = ["benchmark", "dev", "test"]
 
 [[package]]
 name = "tomli"
