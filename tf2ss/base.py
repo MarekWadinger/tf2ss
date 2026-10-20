@@ -387,10 +387,10 @@ def tf2ss(
     if axis is not None:
         numerators_ = trim_zeros_along_axis(numerators_, axis=axis, trim="b")
     # Round to avoid floating point errors. Highest stable precision is 14 decimal places.
-    numerators_ = np.vectorize(lambda x: sp.Rational(str(round(x, 8))))(
+    numerators_ = np.vectorize(lambda x: sp.Rational(str(round(x, 14))))(
         numerators_
     )
-    denominators_ = np.vectorize(lambda x: sp.Rational(str(round(x, 8))))(
+    denominators_ = np.vectorize(lambda x: sp.Rational(str(round(x, 14))))(
         denominators_
     )
     n_outputs = len(numerators_)
