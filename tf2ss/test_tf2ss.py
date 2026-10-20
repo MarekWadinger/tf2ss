@@ -130,6 +130,19 @@ def compare_systems(sys_1: signal.StateSpace, sys_2: signal.StateSpace):
 
 @pytest.mark.parametrize("num, den", systems)
 def test_vs_slycot(num, den):
+    # Introduce minor perturbation to num and den
+    def perturb(arr, eps=1e-8):
+        """Return a copy of arr with each element perturbed by a small random value."""
+        arr = np.array(arr, dtype=float)
+        noise = eps * np.random.randn(*arr.shape)
+        return arr + noise
+
+    # Apply perturbation to numerator and denominator arrays
+    num_perturbed = [[perturb(n) for n in row] for row in num]
+    den_perturbed = [[perturb(d) for d in row] for row in den]
+
+    num = num_perturbed
+    den = den_perturbed
     if not slycot_check():
         pytest.skip("Slycot not available, skipping test")
     A, B, C, D = tf2ss(num, den, minreal=False)
