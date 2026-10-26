@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v2.1.0 (2026-10-26)
+
+### Feat
+
+- minimal realisation (staircase), tol, relative rationalisation; ty instead of mypy (#9)
+
 ## v2.0.0 (2026-10-26)
 
 ### BREAKING CHANGE
