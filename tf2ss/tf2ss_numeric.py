@@ -115,5 +115,5 @@ def tf2ss(
         C[:, k : k + r] = C_k
         k += r
     if minreal:
-        A, B, C = minimal_realization(A, B, C)
+        return (*minimal_realization(A, B, C), D)
     return A, B, C, D

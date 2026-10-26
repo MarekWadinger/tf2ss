@@ -420,7 +420,7 @@ def tf2ss(
         C[:, k : k + n] = C_j
         k += n
     if minreal:
-        A, B, C = minimal_realization(A, B, C)
+        return (*minimal_realization(A, B, C), D)
     return A, B, C, D
 
 

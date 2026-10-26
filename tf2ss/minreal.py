@@ -86,9 +86,9 @@ def minimal_realization(
     B, C = B / si, C / so[:, None]
     if tol is None:
         scale = max(
-            np.linalg.norm(A, 1),
-            np.linalg.norm(B, 1),
-            np.linalg.norm(C, np.inf),
+            float(np.linalg.norm(A, 1)),
+            float(np.linalg.norm(B, 1)),
+            float(np.linalg.norm(C, np.inf)),
         )
         tol = n * n * EPS * scale
     A, B, C = _controllable_part(A, B, C, tol)
