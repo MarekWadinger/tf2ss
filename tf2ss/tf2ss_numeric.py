@@ -43,6 +43,7 @@ def _companion(
 def tf2ss(
     *args: TransferFunction | Sequence[Sequence[Sequence[float]]],
     minreal: bool = True,
+    tol: float | None = None,
 ) -> tuple[NDArray, NDArray, NDArray, NDArray]:
     """Convert a MIMO transfer function to state space numerically.
 
@@ -51,6 +52,10 @@ def tf2ss(
             ``numerators[i][j]`` and ``denominators[i][j]`` that hold the
             coefficients of output ``i`` / input ``j`` in descending powers.
         minreal: Reduce to a minimal realisation (orthogonal staircase).
+        tol: Rank tolerance of the minimal realisation (see
+            :func:`tf2ss.minreal.minimal_realization`). Default n**2*eps
+            relative to the system's norm; a larger value merges nearby poles
+            and cancels near pole-zero pairs.
 
     Returns:
         A, B, C, D of the realisation.
@@ -117,5 +122,5 @@ def tf2ss(
         C[:, k : k + r] = C_k
         k += r
     if minreal:
-        return (*minimal_realization(A, B, C), D)
+        return (*minimal_realization(A, B, C, tol), D)
     return A, B, C, D

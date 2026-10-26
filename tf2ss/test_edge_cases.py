@@ -189,3 +189,13 @@ def test_edge_case(case, method, request):
     A, B, C, D = METHODS[method](num, den, minreal=minreal)
     assert roundtrip_error(num, den, A, B, C, D, points) <= tol
     assert A.shape[0] == states[method]
+
+
+@pytest.mark.parametrize("method", list(METHODS))
+def test_tol_merges_nearby_poles(method):
+    """A larger tol trades exactness for order: poles 1e-12 apart become one."""
+    num, den = [[[1]], [[1]]], [[P(-1)], [P(-1 - 1e-12)]]
+    assert METHODS[method](num, den)[0].shape[0] == 2
+    A, B, C, D = METHODS[method](num, den, tol=1e-8)
+    assert A.shape[0] == 1
+    assert roundtrip_error(num, den, A, B, C, D, AWAY) <= 1e-10

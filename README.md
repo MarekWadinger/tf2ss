@@ -148,7 +148,7 @@ The conversion from transfer function to state-space follows these key steps:
 
 ### API Reference
 
-#### `tf2ss(numerators, denominators, *, minreal=True)`
+#### `tf2ss(numerators, denominators, *, minreal=True, tol=None)`
 
 Convert transfer function to state-space representation.
 
@@ -157,6 +157,9 @@ Convert transfer function to state-space representation.
 - `numerators`: List of lists of lists containing numerator coefficients
 - `denominators`: List of lists of lists containing denominator coefficients
 - `minreal`: Boolean, whether to compute minimal realization (default: True)
+- `tol`: Rank tolerance of the minimal realization (default: `n²·eps` relative to the system's norm). A larger value merges nearby poles and cancels near pole-zero pairs, trading exactness for a smaller state dimension.
+
+`tf2ss.tf2ss_numeric.tf2ss` has the same signature and uses floating point instead of sympy; it is several times faster.
 
 **Returns:**
 

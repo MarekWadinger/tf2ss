@@ -292,6 +292,7 @@ def tf2ss(
     __sys: TransferFunction,
     *,
     minreal: bool = True,
+    tol: float | None = None,
 ) -> tuple[NDArray, NDArray, NDArray, NDArray]: ...
 
 
@@ -301,12 +302,14 @@ def tf2ss(
     __denominators: list[list[list[int | float]]],
     *,
     minreal: bool = True,
+    tol: float | None = None,
 ) -> tuple[NDArray, NDArray, NDArray, NDArray]: ...
 
 
 def tf2ss(
     *args: TransferFunction | list[list[list[int | float]]],
     minreal: bool = True,
+    tol: float | None = None,
 ) -> tuple[NDArray, NDArray, NDArray, NDArray]:
     """Convert a MIMO transfer function to a minimal state-space representation.
 
@@ -318,6 +321,10 @@ def tf2ss(
     Returns:
       A, B, C, D: Minimal state space representation of the system (one controller-canonical
                   block per input when minreal=False).
+      tol: Rank tolerance of the minimal realisation (see
+           tf2ss.minreal.minimal_realization). Default n**2*eps relative to the
+           system's norm; a larger value merges nearby poles and cancels near
+           pole-zero pairs.
 
     Examples:
         >>> sys = TransferFunction([1], [1, 2])
@@ -421,7 +428,7 @@ def tf2ss(
         C[:, k : k + n] = C_j
         k += n
     if minreal:
-        return (*minimal_realization(A, B, C), D)
+        return (*minimal_realization(A, B, C, tol), D)
     return A, B, C, D
 
 
