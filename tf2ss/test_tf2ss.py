@@ -4,9 +4,9 @@ import control as ctrl
 import numpy as np
 import pytest
 from control.exception import slycot_check
-from scipy import signal
 
 from tf2ss import _get_lcm_norm_coeffs, tf2ss
+from tf2ss.tf2ss_numeric import tf2ss as tf2ss_numeric
 
 systems = [
     ([[[0.5]]], [[[32]]]),
@@ -82,119 +82,58 @@ def assert_same_transfer_function(num, den, A, B, C, D, rtol=1e-8):
         )
 
 
-def compare_poles(poles_1, poles_2):
-    # Check if all poles are stable (real part < 0)
-    assert np.all(poles_1 <= 0), "Unstable poles in 1"
-    assert np.all(poles_2 <= 0), "Unstable poles in 2"
-
-    # Sort poles by their real parts (most dominant first)
-    poles_1 = sorted(poles_1, key=lambda x: -np.real(x))
-    poles_2 = sorted(poles_2, key=lambda x: -np.real(x))
-
-    # Find the number of dominant poles to compare
-    min_length = min(len(poles_1), len(poles_2))
-
-    # Log information about the different dimensions if they exist
-    if len(poles_1) != len(poles_2):
-        print(
-            f"Note: Different number of poles detected - A_1: {len(poles_1)}, A_2: {len(poles_2)}"
-        )
-
-    # Compare the dominant poles
-    for i in range(min_length):
-        assert np.isclose(poles_1[i], poles_2[i], rtol=1e-5, atol=1e-5), (
-            f"Dominant pole {i} differs: {poles_1[i]} vs {poles_2[i]}"
-        )
+# Known failures of the symbolic path in tf2ss.base (v1.2.0): C is filled in
+# reversed order for the first-row companion A from scipy, D takes the
+# constant numerator term instead of the leading one, and for several inputs
+# the C row is overwritten per input while B is tiled.
+_SYMBOLIC_KNOWN_BAD = {0, 3, 4, 5, 6, 7, 8, 9, 10}
 
 
-def compare_systems(sys_1: signal.StateSpace, sys_2: signal.StateSpace):
-    # Additional check: compare system responses
-    # This ensures that even with different numbers of poles, the systems behave similarly
-    t = np.linspace(0, 10, 1000)  # Time vector for simulation
+def perturb(coeffs, rng, eps=1e-8):
+    """Perturb nonzero coefficients by eps-scaled noise; zeros stay zero.
 
-    # Generate step responses
-    # TODO: fix error - ValueError: System does not define that many inputs.
-    _, y_1 = signal.step(sys_1, T=t)
-    _, y_2 = signal.step(sys_2, T=t)
-
-    # Compare step responses
-    assert np.allclose(y_1, y_2, rtol=1e-4, atol=1e-4), (
-        "Step responses differ between original and minimal"
-    )
-
-    assert np.allclose(sys_1.A, sys_2.A, atol=1e-6), "Mismatch in A matrix"
-    assert np.allclose(sys_1.B, sys_2.B, atol=1e-6), "Mismatch in B matrix"
-    assert np.allclose(sys_1.C, sys_2.C, atol=1e-6), "Mismatch in C matrix"
-    assert np.allclose(sys_1.D, sys_2.D, atol=1e-6), "Mismatch in D matrix"
+    Perturbing a structural zero (e.g. the leading 0 in [0, 1]) would add a
+    pole or zero near infinity and change the system's structure.
+    """
+    a = np.asarray(coeffs, dtype=float)
+    return list(a + eps * rng.standard_normal(a.shape) * (a != 0))
 
 
-@pytest.mark.parametrize("num, den", systems)
-def test_vs_slycot(num, den):
-    # Introduce minor perturbation to num and den
-    def perturb(arr, eps=1e-8):
-        """Return a copy of arr with each element perturbed by a small random value."""
-        arr = np.array(arr, dtype=float)
-        noise = eps * np.random.randn(*arr.shape)
-        return arr + noise
-
-    # Apply perturbation to numerator and denominator arrays
-    num_perturbed = [[perturb(n) for n in row] for row in num]
-    den_perturbed = [[perturb(d) for d in row] for row in den]
-
-    num = num_perturbed
-    den = den_perturbed
+@pytest.mark.parametrize("perturbed", [False, True])
+@pytest.mark.parametrize(
+    "impl, num, den",
+    [
+        *(
+            pytest.param(
+                tf2ss,
+                *case,
+                marks=pytest.mark.xfail(
+                    strict=True, reason="tf2ss.base realisation bug"
+                ),
+            )
+            if i in _SYMBOLIC_KNOWN_BAD
+            else (tf2ss, *case)
+            for i, case in enumerate(systems)
+        ),
+        *((tf2ss_numeric, *case) for case in systems),
+    ],
+)
+def test_vs_slycot(impl, num, den, perturbed):
     if not slycot_check():
         pytest.skip("Slycot not available, skipping test")
-    A, B, C, D = tf2ss(num, den, minreal=False)
+    if perturbed:
+        # Near-cancelling pole-zero pairs must not break the conversion.
+        rng = np.random.default_rng(0)
+        num = [[perturb(n, rng) for n in row] for row in num]
+        den = [[perturb(d, rng) for d in row] for row in den]
+    # Reference: SLICOT td04ad realisation of the same MIMO system.
+    sys_slycot = ctrl.tf2ss(ctrl.tf(num, den))
+    assert_same_transfer_function(num, den, *ctrl.ssdata(sys_slycot))
 
-    # Convert to control.TransferFunction format
-    n_outputs = len(num)
-    n_inputs = len(num[0])
-    tf_mimo = [
-        [ctrl.TransferFunction(num[i][j], den[i][j]) for j in range(n_inputs)]
-        for i in range(n_outputs)
-    ]
+    A, B, C, D = impl(num, den, minreal=False)
 
-    # Convert using control.tf2ss (uses slycot if available)
-    A_slycot, B_slycot, C_slycot, D_slycot = ctrl.ssdata(
-        ctrl.append(*[ctrl.append(*row) for row in tf_mimo])
-    )
-    poles = np.linalg.eigvals(A)
-    poles_slycot = np.linalg.eigvals(A_slycot)
-    import control
-
-    sys1 = control.StateSpace(A, B, C, D)
-    sys2 = control.StateSpace(A_slycot, B_slycot, C_slycot, D_slycot)
-
-    # Get transmission zeros for both systems
-    zeros1 = control.zeros(sys1)
-    zeros2 = control.zeros(sys2)
-
-    # Sort zeros for consistent comparison
-    zeros1 = np.sort_complex(zeros1)
-    zeros2 = np.sort_complex(zeros2)
-    print("zero found by us", zeros1)
-    print("zeros found by slycot", zeros2)
-
-    # Ensure same number of zeros
-    assert len(zeros1) == len(zeros2), (
-        f"Number of zeros differs: {len(zeros1)} vs {len(zeros2)}"
-    )
-
-    # Compare each zero
-    for i in range(len(zeros1)):
-        assert np.isclose(zeros1[i], zeros2[i], rtol=1e-5, atol=1e-5), (
-            f"Zero {i} differs: {zeros1[i]} vs {zeros2[i]}"
-        )
-
-    print("poles found by us", poles)
-    print("poles found by slycot", poles_slycot)
-    compare_poles(poles, poles_slycot)
-
-    # compare_systems(
-    #     signal.StateSpace(A, B, C, D),
-    #     signal.StateSpace(A_slycot, B_slycot, C_slycot, D_slycot),
-    # )
+    assert A.shape[0] >= sys_slycot.nstates
+    assert_same_transfer_function(num, den, A, B, C, D)
 
 
 @pytest.mark.parametrize("num, den", systems)
@@ -232,13 +171,6 @@ def test_coeffs_retrieval(den):
         assert np.allclose(den_our, den_ctrl, atol=1e-5)
         # TODO: create test evaluating minimum realization when implemented
         # assert np.allclose(den_our, den_min, atol=1e-5)
-
-
-# Known failures of the symbolic path in tf2ss.base (v1.2.0): C is filled in
-# reversed order for the first-row companion A from scipy, D takes the
-# constant numerator term instead of the leading one, and for several inputs
-# the C row is overwritten per input while B is tiled.
-_SYMBOLIC_KNOWN_BAD = {0, 3, 4, 5, 6, 7, 8, 9, 10}
 
 
 @pytest.mark.parametrize(
