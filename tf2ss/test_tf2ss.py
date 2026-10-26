@@ -258,3 +258,23 @@ _SYMBOLIC_KNOWN_BAD = {0, 3, 4, 5, 6, 7, 8, 9, 10}
 def test_tf2ss_realisation_reproduces_transfer_function(num, den):
     A, B, C, D = tf2ss(num, den, minreal=False)
     assert_same_transfer_function(num, den, A, B, C, D)
+
+
+@pytest.mark.parametrize(
+    "num, den",
+    [
+        ([[[1e-9]]], [[[1, 1]]]),  # small gain
+        ([[[1]]], [[[1, 1e-9]]]),  # slow pole
+    ],
+)
+def test_tf2ss_small_coefficients_are_not_rounded_away(num, den):
+    A, B, C, D = tf2ss(num, den, minreal=False)
+
+    # Relative tolerance only: a lost 1e-9 gain is below any sensible atol.
+    for s in S_POINTS:
+        np.testing.assert_allclose(
+            ss_response(A, B, C, D, s), tf_response(num, den, s), rtol=1e-8
+        )
+    np.testing.assert_allclose(
+        np.linalg.eigvals(A), np.roots(den[0][0]), rtol=1e-6
+    )
