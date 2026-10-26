@@ -103,7 +103,7 @@ plt.show()
 
 ## 🛠 Installation
 
-Requires Python 3.10 or higher.
+Requires Python 3.11 or higher.
 
 ### From PyPI (recommended)
 
