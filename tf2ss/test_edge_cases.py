@@ -56,14 +56,7 @@ CASES = [
         True,
         1e-12,
         {"symbolic": 5, "numeric": 5},
-        # np.roots spreads a 5-fold root by ~eps^(1/5), so pole matching misses
-        # the shared factor and the realisation has 9 states instead of 5.
-        {
-            "numeric": xfail(
-                "numeric",
-                "repeated poles are not merged (9 states, minimal 5)",
-            )
-        },
+        {},
     ),
     (
         "float repeated poles (s+1/3)^4, (s+1/3)^5",
@@ -72,10 +65,9 @@ CASES = [
         AWAY,
         True,
         1e-12,
-        {
-            "symbolic": 9,
-            "numeric": 9,
-        },  # neither merges: exactness needs exact coefficients
+        # Neither exact LCM nor root matching merges float-inconsistent
+        # repeated poles (9 states); the staircase rank decision does.
+        {"symbolic": 5, "numeric": 5},
         {},
     ),
     (
@@ -85,10 +77,8 @@ CASES = [
         AWAY,
         True,
         1e-10,
-        {
-            "symbolic": 2,
-            "numeric": 1,
-        },  # numeric merges within tolerance, symbolic keeps both
+        # 1e-12 is above the default n^2*eps rank tolerance: both states kept.
+        {"symbolic": 2, "numeric": 2},
         {},
     ),
     (
@@ -98,10 +88,8 @@ CASES = [
         AWAY,
         True,
         1e-9,
-        {
-            "symbolic": 2,
-            "numeric": 1,
-        },  # numeric minreal cancels approximately (error ~1e-10)
+        # Not cancelled at the default n^2*eps rank tolerance.
+        {"symbolic": 2, "numeric": 2},
         {},
     ),
     (
@@ -127,12 +115,7 @@ CASES = [
         False,
         1e-9,
         {"symbolic": 1, "numeric": 1},
-        {
-            "symbolic": xfail("symbolic", "gain rounded to 0"),
-            "numeric": xfail(
-                "numeric", "python-control drops the near-zero numerator"
-            ),
-        },
+        {"symbolic": xfail("symbolic", "gain rounded to 0")},
     ),
     (
         "non-terminating decimals (1/3, 0.1)",
@@ -172,19 +155,21 @@ CASES = [
         AWAY,
         True,
         1e-12,
+        # One block per input has 2 states; the staircase removes the
+        # unobservable one (McMillan degree 1).
         {"symbolic": 1, "numeric": 1},
-        # One block per input: controllable but not observable, 2 states for a
-        # McMillan degree of 1. Fixing it needs a minimal-realisation step.
-        {
-            "symbolic": xfail(
-                "symbolic",
-                "per-input blocks are not minimal (2 states, minimal 1)",
-            ),
-            "numeric": xfail(
-                "numeric",
-                "per-input blocks are not minimal (2 states, minimal 1)",
-            ),
-        },
+        {},
+    ),
+    (
+        "redundant along rows and columns [[1, 2], [3, 6]]/(s+1)",
+        [[[1], [2]], [[3], [6]]],
+        [[P(-1), P(-1)], [P(-1), P(-1)]],
+        AWAY,
+        True,
+        1e-12,
+        # Rank-1 residue: per-input and per-output blocks both give 2 states.
+        {"symbolic": 1, "numeric": 1},
+        {},
     ),
     (
         "SIMO, same pole on both outputs",

@@ -9,6 +9,8 @@ from control import TransferFunction, tf
 from numpy.typing import NDArray
 from scipy.signal import tf2ss as tf2ss_siso
 
+from .minreal import minimal_realization
+
 
 def _pad_numerators(
     numerators: list[list[list[int | float]]],
@@ -309,10 +311,12 @@ def tf2ss(
 
     Parameters:
       *args: Transfer function specification, which can be: (1) A single TransferFunction object, or (2) Two lists containing numerators and denominators, where each list contains coefficient sequences in descending degree order. The denominator polynomials must be at least as long as their corresponding numerator polynomials.
-      minreal: Whether to perform minimal realization (default is True).
+      minreal: Cancel pole-zero pairs exactly per entry, then remove uncontrollable and
+               unobservable states with the orthogonal staircase (default is True).
 
     Returns:
-      A, B, C, D: Minimal state space representation of the system, in controller canonical form.
+      A, B, C, D: Minimal state space representation of the system (one controller-canonical
+                  block per input when minreal=False).
 
     Examples:
         >>> sys = TransferFunction([1], [1, 2])
@@ -415,6 +419,8 @@ def tf2ss(
         B[k : k + n, j : j + 1] = B_j
         C[:, k : k + n] = C_j
         k += n
+    if minreal:
+        A, B, C = minimal_realization(A, B, C)
     return A, B, C, D
 
 

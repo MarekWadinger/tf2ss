@@ -141,10 +141,10 @@ pip install -e .[dev]
 
 The conversion from transfer function to state-space follows these key steps:
 
-1. **Common Denominator Computation**: For MIMO systems, compute the least common multiple (LCM) of all denominators
+1. **Common Denominator Computation**: For each input, compute the exact least common multiple (LCM) of that column's denominators
 2. **Numerator Adjustment**: Adjust numerators based on the common denominator
-3. **Controllable Canonical Form**: Construct state matrices in controllable canonical form
-4. **Minimal Realization**: Optionally reduce to minimal form
+3. **Controllable Canonical Form**: Construct one controller-canonical block per input
+4. **Minimal Realization**: With `minreal=True` (default), remove uncontrollable and unobservable states with the orthogonal staircase (Kalman decomposition, as SLICOT TB01PD), using a tolerance relative to the system's scale
 
 ### API Reference
 
