@@ -40,11 +40,12 @@ repos:
         additional_dependencies: [black]
   - repo: local
     hooks:
-      - id: mypy # mypy is a pre-commit hook that runs as a linter to check for type errors
-        name: mypy
-        entry: mypy
+      - id: ty # type check the package with ty
+        name: ty
+        entry: uv run ty check tf2ss/
         language: system
         types: [python]
+        pass_filenames: false
         stages:
           - "pre-push"
           - "pre-merge-commit"
