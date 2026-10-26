@@ -7,14 +7,16 @@ which spreads repeated roots and drops tiny coefficients. Redundant states are
 removed afterwards by :func:`tf2ss.minreal.minimal_realization`.
 """
 
+from collections.abc import Sequence
+
 import numpy as np
 from control import TransferFunction, tf
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 from .minreal import minimal_realization
 
 
-def _trim(p: NDArray) -> NDArray:
+def _trim(p: ArrayLike) -> NDArray:
     """Drop leading zeros (keep a single zero for the zero polynomial)."""
     p = np.atleast_1d(np.asarray(p, dtype=float))
     nz = np.flatnonzero(p)
@@ -22,7 +24,7 @@ def _trim(p: NDArray) -> NDArray:
 
 
 def _companion(
-    num: NDArray, den: NDArray
+    num: ArrayLike, den: ArrayLike
 ) -> tuple[NDArray, NDArray, NDArray, float]:
     """Controller form of num/den: A with first row -a[1:], B = e1, C, D."""
     num, den = _trim(num) / _trim(den)[0], _trim(den) / _trim(den)[0]
@@ -39,7 +41,7 @@ def _companion(
 
 
 def tf2ss(
-    *args: TransferFunction | list[list[list[int | float]]],
+    *args: TransferFunction | Sequence[Sequence[Sequence[float]]],
     minreal: bool = True,
 ) -> tuple[NDArray, NDArray, NDArray, NDArray]:
     """Convert a MIMO transfer function to state space numerically.
