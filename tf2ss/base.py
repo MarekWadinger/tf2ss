@@ -351,76 +351,82 @@ def tf2ss(
     if sys is None:
         raise ValueError("Invalid transfer function")
 
-    if minreal:
-        sys = sys.minreal(tol=1e-8)
-
-    # TODO: Apparently, the common_den() method changes the number of outputs of the system (tested for case where noutputs < ninputs)
-    numerators_, denominators_, _ = sys._common_den()
-
-    denominators_ = np.expand_dims(denominators_, axis=0)
-    denominators_ = np.tile(denominators_, (numerators_.shape[0], 1, 1))
-
-    # Remove the last row of numerators if all elements are zero
-    # Seems to be a bug in control.common_den() that adds an extra row
-    def trim_zeros_along_axis(arr, axis, trim="b"):
-        """Trip zeros along the given axis, preserving at last one array."""
-        slices = [slice(None)] * arr.ndim
-        for idx in range(arr.shape[axis]):
-            # Type annotation to fix the error in line 361
-            # Use explicit typing for the list index
-            slices[axis] = (
-                slice(idx, idx + 1) if trim == "f" else slice(-idx - 1, -idx)
-            )
-            if not np.all(arr[tuple(slices)] == 0):
-                break
-        start = idx if trim == "f" else 0
-        end = arr.shape[axis] - idx if trim == "b" else arr.shape[axis]
-        slices[axis] = slice(start, end)
-        return arr[tuple(slices)]
-
-    if sys.noutputs < numerators_.shape[0]:
-        axis = 0
-    elif sys.ninputs < numerators_.shape[1]:
-        axis = 1
-    else:
-        axis = None
-    if axis is not None:
-        numerators_ = trim_zeros_along_axis(numerators_, axis=axis, trim="b")
-    # Round to avoid floating point errors. Highest stable precision is 14 decimal places.
-    numerators_ = np.vectorize(lambda x: sp.Rational(str(round(x, 14))))(
-        numerators_
-    )
-    denominators_ = np.vectorize(lambda x: sp.Rational(str(round(x, 14))))(
-        denominators_
-    )
-    n_outputs = len(numerators_)
-    n_inputs = len(numerators_[0])
+    n_out, n_in = sys.noutputs, sys.ninputs
     s = sp.Symbol("s")
-    # Step 1: Compute the LCD of all denominators.
-    lcd = compute_lcd_from_denominators(denominators_, s)
-    # Step 2: Get state-space representation (A, B) from the LCD.
-    # A, B_scalar = controllable_canonical_form(lcd)
-    A, B_scalar = state_space_from_poly(lcd)
-    n_states = A.shape[0]
-    C = np.zeros((n_outputs, n_states))
-    D = np.zeros((n_outputs, n_inputs))
-    # Step 3: For each transfer function, compute the adjusted numerator and fill C and D.
-    for i_out in range(n_outputs):
-        for j_in in range(n_inputs):
-            den = (
-                denominators_[i_out][j_in]
-                if denominators_.ndim == 3
-                else denominators_[j_in]
-            )
-            adjusted_num_coeffs = compute_adjusted_num(
-                numerators_[i_out][j_in], lcd, den, s
-            )
-            # In the controllable canonical (companion) form, the output matrix uses the reversed order.
-            C[i_out, :] = rjust(adjusted_num_coeffs[::-1], n_states)
-            # If the degree is less than n_states, assign the constant term to D.
-            if len(adjusted_num_coeffs) < n_states:
-                D[i_out, j_in] = adjusted_num_coeffs[-1]
-            else:
-                D[i_out, j_in] = 0
-    B = np.tile(B_scalar, (1, n_inputs))
+    # Exact arithmetic on the user's own coefficients. Floats are rounded to
+    # 14 decimals first; that is the highest precision that survives the
+    # float -> decimal string -> Rational round trip.
+    num = [
+        [_exact_poly(sys.num_array[i][j], s) for j in range(n_in)]
+        for i in range(n_out)
+    ]
+    den = [
+        [_exact_poly(sys.den_array[i][j], s) for j in range(n_in)]
+        for i in range(n_out)
+    ]
+    if minreal:  # exact pole-zero cancellation per entry
+        for i in range(n_out):
+            for j in range(n_in):
+                if not num[i][j].is_zero:
+                    g = sp.gcd(num[i][j], den[i][j])
+                    num[i][j], den[i][j] = (
+                        sp.div(num[i][j], g)[0],
+                        sp.div(den[i][j], g)[0],
+                    )
+
+    # One controller-canonical block per input j, built on the exact LCM of
+    # column j's denominators (same block layout as scipy.signal.tf2ss).
+    blocks = []
+    D = np.zeros((n_out, n_in))
+    for j in range(n_in):
+        lcd = sp.Poly(1, s)
+        for i in range(n_out):
+            lcd = sp.lcm(lcd, den[i][j])
+        lcd = lcd.monic()
+        n = lcd.degree()
+        a = lcd.all_coeffs()  # a[0] == 1
+        b = np.zeros((n_out, n + 1))
+        for i in range(n_out):
+            q, r = sp.div(num[i][j] * lcd, den[i][j])
+            if not r.is_zero:
+                raise ValueError(
+                    "Adjusted numerator division has non-zero remainder"
+                )
+            coeffs = q.all_coeffs()
+            if len(coeffs) > n + 1:
+                raise ValueError(f"Transfer function ({i}, {j}) is improper")
+            b[i, n + 1 - len(coeffs) :] = [float(c) for c in coeffs]
+        a_f = np.array([float(c) for c in a])
+        A_j = np.eye(n, k=-1)
+        A_j[:1, :] = -a_f[1:]
+        B_j = np.zeros((n, 1))
+        B_j[:1, 0] = 1.0
+        blocks.append((A_j, B_j, b[:, 1:] - np.outer(b[:, 0], a_f[1:])))
+        D[:, j] = b[:, 0]
+
+    n_states = sum(A_j.shape[0] for A_j, _, _ in blocks)
+    A = np.zeros((n_states, n_states))
+    B = np.zeros((n_states, n_in))
+    C = np.zeros((n_out, n_states))
+    k = 0
+    for j, (A_j, B_j, C_j) in enumerate(blocks):
+        n = A_j.shape[0]
+        A[k : k + n, k : k + n] = A_j
+        B[k : k + n, j : j + 1] = B_j
+        C[:, k : k + n] = C_j
+        k += n
     return A, B, C, D
+
+
+def _exact_poly(coefs: Any, s: sp.Symbol) -> sp.Poly:
+    """Polynomial with exact rational coefficients (floats rounded to 14 decimals).
+
+    Examples:
+        >>> _exact_poly([0.5, 1], sp.Symbol("s"))
+        Poly(1/2*s + 1, s, domain='QQ')
+    """
+    return sp.Poly(
+        [sp.Rational(str(round(float(c), 14))) for c in np.atleast_1d(coefs)],
+        s,
+        domain="QQ",
+    )
