@@ -5,6 +5,9 @@ number of states. Known weaknesses are strict xfails, so the suite documents
 them and fails loudly if a path changes behaviour.
 """
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -18,7 +21,10 @@ AWAY = (
 )  # |s| ~ 1, away from poles
 P = lambda *roots: list(np.poly(roots))  # noqa: E731
 
-METHODS = {"symbolic": base.tf2ss, "numeric": tf2ss_numeric.tf2ss}
+METHODS: dict[str, Callable[..., Any]] = {
+    "symbolic": base.tf2ss,
+    "numeric": tf2ss_numeric.tf2ss,
+}
 
 
 def roundtrip_error(num, den, A, B, C, D, points):

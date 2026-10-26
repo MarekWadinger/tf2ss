@@ -357,11 +357,11 @@ def tf2ss(
     # 14 decimals first; that is the highest precision that survives the
     # float -> decimal string -> Rational round trip.
     num = [
-        [_exact_poly(sys.num_array[i][j], s) for j in range(n_in)]
+        [_exact_poly(sys.num[i][j], s) for j in range(n_in)]
         for i in range(n_out)
     ]
     den = [
-        [_exact_poly(sys.den_array[i][j], s) for j in range(n_in)]
+        [_exact_poly(sys.den[i][j], s) for j in range(n_in)]
         for i in range(n_out)
     ]
     if minreal:  # exact pole-zero cancellation per entry
