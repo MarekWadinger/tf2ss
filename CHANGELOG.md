@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The CHANGELOG is powered by [Commitizen](https://commitizen-tools.github.io/commitizen/).
 
+## v2.0.0 (2026-10-26)
+
+### BREAKING CHANGE
+
+- requires-python is now >=3.11 (Python 3.10 reached end of life in October 2026).
+
+### Feat
+
+- numerical tf2ss implementation verified by round-trip tests (#4)
+
+### Fix
+
+- **deps**: upgrade vulnerable dependencies and require Python 3.11 (#7)
+- **base**: correct symbolic tf2ss realisation + edge-case tests (#6)
+
 ## v1.2.0 (2025-05-30)
 
 ### Feat
