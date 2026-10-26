@@ -41,6 +41,47 @@ systems = [
 ]
 
 
+# Extra cases for the transfer-function round-trip checks.
+roundtrip_systems = [
+    *systems,
+    ([[[1, 3]]], [[[1, 3, 2]]]),  # (s+3)/(s^2+3s+2): non-palindromic num
+    ([[[2, 6]]], [[[2, 2]]]),  # (2s+6)/(2s+2): biproper, non-monic den
+    ([[[1]], [[1]]], [[[1, 1]], [[1, 2]]]),  # SIMO
+    ([[[1], [2]]], [[[1, 1], [1, 1]]]),  # MISO with a shared pole
+    ([[[1], [1]]], [[[1, 1], [1, 2]]]),  # MISO with distinct poles
+]
+
+# Points in the complex plane where G(s) is compared (away from all poles).
+S_POINTS = (0.37 + 1.1j, -0.71 + 2.3j, 1.9 - 0.4j, 0.05 + 0.5j, 3.3 + 3.0j)
+
+
+def tf_response(num, den, s):
+    """Evaluate the transfer matrix given as nested coefficient lists."""
+    return np.array(
+        [
+            [np.polyval(n, s) / np.polyval(d, s) for n, d in zip(nrow, drow)]
+            for nrow, drow in zip(num, den)
+        ]
+    )
+
+
+def ss_response(A, B, C, D, s):
+    """Evaluate C (sI - A)^-1 B + D."""
+    n = A.shape[0]
+    return C @ np.linalg.solve(s * np.eye(n) - A, B) + D
+
+
+def assert_same_transfer_function(num, den, A, B, C, D, rtol=1e-8):
+    """Assert that (A, B, C, D) realises the transfer matrix num/den."""
+    for s in S_POINTS:
+        np.testing.assert_allclose(
+            ss_response(A, B, C, D, s),
+            tf_response(num, den, s),
+            rtol=rtol,
+            atol=rtol,
+        )
+
+
 def compare_poles(poles_1, poles_2):
     # Check if all poles are stable (real part < 0)
     assert np.all(poles_1 <= 0), "Unstable poles in 1"
@@ -178,3 +219,29 @@ def test_coeffs_retrieval(den):
         assert np.allclose(den_our, den_ctrl, atol=1e-5)
         # TODO: create test evaluating minimum realization when implemented
         # assert np.allclose(den_our, den_min, atol=1e-5)
+
+
+# Known failures of the symbolic path in tf2ss.base (v1.2.0): C is filled in
+# reversed order for the first-row companion A from scipy, D takes the
+# constant numerator term instead of the leading one, and for several inputs
+# the C row is overwritten per input while B is tiled.
+_SYMBOLIC_KNOWN_BAD = {0, 3, 4, 5, 6, 7, 8, 9, 10}
+
+
+@pytest.mark.parametrize(
+    "num, den",
+    [
+        pytest.param(
+            *case,
+            marks=pytest.mark.xfail(
+                strict=True, reason="tf2ss.base realisation bug"
+            ),
+        )
+        if i in _SYMBOLIC_KNOWN_BAD
+        else case
+        for i, case in enumerate(roundtrip_systems)
+    ],
+)
+def test_tf2ss_realisation_reproduces_transfer_function(num, den):
+    A, B, C, D = tf2ss(num, den, minreal=False)
+    assert_same_transfer_function(num, den, A, B, C, D)
