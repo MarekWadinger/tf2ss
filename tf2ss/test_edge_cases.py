@@ -42,10 +42,6 @@ def roundtrip_error(num, den, A, B, C, D, points):
     return worst
 
 
-def xfail(method, reason):
-    return pytest.mark.xfail(strict=True, reason=f"{method}: {reason}")
-
-
 # (id, num, den, points, minreal, max error, expected states per method, marks per method)
 CASES = [
     (
@@ -99,13 +95,10 @@ CASES = [
         (1e-14 + 0j,),
         True,
         1e-9,
+        # Relative rationalisation keeps the pole (absolute rounding made it an
+        # integrator, 10% off at s=1e-14).
         {"symbolic": 1, "numeric": 1},
-        # 14-decimal rounding snaps the pole to 0: an integrator, 10% off at s=1e-14.
-        {
-            "symbolic": xfail(
-                "symbolic", "coefficients below 5e-15 are rounded to 0"
-            )
-        },
+        {},
     ),
     (
         "tiny gain 1e-16/(s+1)",
@@ -115,7 +108,7 @@ CASES = [
         False,
         1e-9,
         {"symbolic": 1, "numeric": 1},
-        {"symbolic": xfail("symbolic", "gain rounded to 0")},
+        {},
     ),
     (
         "non-terminating decimals (1/3, 0.1)",
@@ -124,9 +117,9 @@ CASES = [
         AWAY,
         True,
         1e-15,
+        # 0.333... is recovered as exactly 1/3.
         {"symbolic": 2, "numeric": 2},
-        # Rationalising at 14 decimals costs ~1e-14 relative accuracy.
-        {"symbolic": xfail("symbolic", "~2e-14 rounding error on 1/3")},
+        {},
     ),
     (
         "stiff poles 1e-6 and 1e6",

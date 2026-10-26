@@ -1,5 +1,6 @@
 """Helper functions for tf2ss conversion."""
 
+from fractions import Fraction
 from math import gcd
 from typing import Any, Literal, overload
 
@@ -357,9 +358,9 @@ def tf2ss(
 
     n_out, n_in = sys.noutputs, sys.ninputs
     s = sp.Symbol("s")
-    # Exact arithmetic on the user's own coefficients. Floats are rounded to
-    # 14 decimals first; that is the highest precision that survives the
-    # float -> decimal string -> Rational round trip.
+    # Exact arithmetic on the user's own coefficients. Each float becomes the
+    # simplest rational within a relative 1e-15 of it (0.333... -> 1/3), so
+    # scale does not matter: 1e-16 stays 1e-16 instead of rounding to 0.
     num = [
         [_exact_poly(sys.num[i][j], s) for j in range(n_in)]
         for i in range(n_out)
@@ -425,14 +426,39 @@ def tf2ss(
 
 
 def _exact_poly(coefs: Any, s: sp.Symbol) -> sp.Poly:
-    """Polynomial with exact rational coefficients (floats rounded to 14 decimals).
+    """Polynomial with exact rational coefficients (see _simplest_rational).
 
     Examples:
-        >>> _exact_poly([0.5, 1], sp.Symbol("s"))
-        Poly(1/2*s + 1, s, domain='QQ')
+        >>> _exact_poly([0.5, 1 / 3, 0.1], sp.Symbol("s"))
+        Poly(1/2*s**2 + 1/3*s + 1/10, s, domain='QQ')
     """
     return sp.Poly(
-        [sp.Rational(str(round(float(c), 14))) for c in np.atleast_1d(coefs)],
+        [_simplest_rational(float(c)) for c in np.atleast_1d(coefs)],
         s,
         domain="QQ",
     )
+
+
+def _simplest_rational(x: float, rtol: float = 1e-15) -> sp.Rational:
+    """Simplest rational within a relative ``rtol`` of ``x`` (Stern-Brocot).
+
+    Recovers fractions typed as decimals (0.333... -> 1/3) and keeps the
+    relative accuracy of tiny and huge values.
+
+    Examples:
+        >>> _simplest_rational(0.1), _simplest_rational(1 / 3), _simplest_rational(-2.5)
+        (1/10, 1/3, -5/2)
+    """
+    if x == 0:
+        return sp.Integer(0)
+    f = abs(Fraction(x))  # exact binary value
+    q = _simplest_between(f * (1 - Fraction(rtol)), f * (1 + Fraction(rtol)))
+    return sp.Rational(q.numerator, q.denominator) * (1 if x > 0 else -1)
+
+
+def _simplest_between(lo: Fraction, hi: Fraction) -> Fraction:
+    """Simplest rational in [lo, hi] for 0 < lo <= hi (continued fractions)."""
+    whole = lo.numerator // lo.denominator
+    if whole == lo or whole + 1 <= hi:
+        return Fraction(whole if whole == lo else whole + 1)
+    return whole + 1 / _simplest_between(1 / (hi - whole), 1 / (lo - whole))
