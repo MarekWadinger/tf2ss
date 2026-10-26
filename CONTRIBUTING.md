@@ -73,7 +73,7 @@ This project adheres to a code of conduct. By participating, you are expected to
 
    ```bash
    uv run ruff check .
-   uv run mypy tf2ss/
+   uv run ty check tf2ss/
    ```
 
 7. Commit your changes with a descriptive commit message

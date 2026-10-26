@@ -14,6 +14,7 @@ Key functions:
 """
 
 import warnings
+from typing import Any, cast
 
 import numpy as np
 from control import StateSpace, TransferFunction, config
@@ -47,10 +48,13 @@ def _convert_to_statespace(
         return sys
 
     elif isinstance(sys, TransferFunction):
+        # python-control's typing does not describe num/den (list of lists of arrays)
+        sys_num = cast(list[list[Any]], sys.num)
+        sys_den = cast(list[list[Any]], sys.den)
         # Make sure the transfer function is proper
         if any(
-            [[len(num) for num in col] for col in sys.num]
-            > [[len(num) for num in col] for col in sys.den]
+            [[len(num) for num in col] for col in sys_num]
+            > [[len(num) for num in col] for col in sys_den]
         ):
             raise ValueError(
                 "transfer function is non-proper; can't "
@@ -84,14 +88,14 @@ def _convert_to_statespace(
 
         elif method == "scipy":
             # Scipy tf2ss can't handle MIMO, but SISO is OK
-            maxn = max(max(len(n) for n in nrow) for nrow in sys.num)
-            maxd = max(max(len(d) for d in drow) for drow in sys.den)
+            maxn = max(max(len(n) for n in nrow) for nrow in sys_num)
+            maxd = max(max(len(d) for d in drow) for drow in sys_den)
             if 1 == maxn and 1 == maxd:
                 D = empty((sys.noutputs, sys.ninputs), dtype=float)
                 for i, j in itertools.product(
                     range(sys.noutputs), range(sys.ninputs)
                 ):
-                    D[i, j] = sys.num[i][j][0] / sys.den[i][j][0]
+                    D[i, j] = sys_num[i][j][0] / sys_den[i][j][0]
                 newsys = StateSpace([], [], [], D, sys.dt)
             else:
                 if not issiso(sys):

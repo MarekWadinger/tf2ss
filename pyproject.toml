@@ -43,7 +43,7 @@ benchmark = [
     "slycot>=0.6.0",
 ]
 dev = [
-    "mypy>=1.0.0",
+    "ty>=0.0.42",
     "commitizen>=4.0.0",
     "pre-commit>=3.0.0",
     "ruff>=0.1.0",
@@ -78,13 +78,6 @@ target-version = "py311"
 [tool.ruff.lint]
 ignore = ["E501"]
 select = ["E", "F", "I", "UP"]
-
-[tool.mypy]
-ignore_missing_imports = true
-explicit_package_bases = true
-implicit_optional = true
-check_untyped_defs = true
-warn_redundant_casts = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
