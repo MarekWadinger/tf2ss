@@ -225,7 +225,7 @@ def test_coeffs_retrieval(den):
 # reversed order for the first-row companion A from scipy, D takes the
 # constant numerator term instead of the leading one, and for several inputs
 # the C row is overwritten per input while B is tiled.
-_SYMBOLIC_KNOWN_BAD = {0, 3, 4, 5, 6, 7, 8, 9, 10}
+_SYMBOLIC_KNOWN_BAD: set[int] = set()
 
 
 @pytest.mark.parametrize(
